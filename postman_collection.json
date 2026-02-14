@@ -1,0 +1,109 @@
+{
+  "info": {
+    "name": "Sistema Restaurante - API Collection",
+    "description": "Colección de ejemplos para Postman - Arquitectura Hexagonal",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "MICROSERVICIO USUARIOS",
+      "item": [
+        {
+          "name": "Crear Usuario",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "url": {"raw": "http://localhost:8001/usuarios/", "protocol": "http", "host": ["localhost"], "port": "8001", "path": ["usuarios", ""]},
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"idusuario\": 1,\n  \"nombre\": \"María García\",\n  \"email\": \"maria.garcia@ejemplo.com\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Obtener Todos los Usuarios",
+          "request": {
+            "method": "GET",
+            "url": {"raw": "http://localhost:8001/usuarios/", "protocol": "http", "host": ["localhost"], "port": "8001", "path": ["usuarios", ""]}
+          }
+        },
+        {
+          "name": "Obtener Usuario por ID",
+          "request": {
+            "method": "GET",
+            "url": {"raw": "http://localhost:8001/usuarios/1", "protocol": "http", "host": ["localhost"], "port": "8001", "path": ["usuarios", "1"]}
+          }
+        },
+        {
+          "name": "Actualizar Usuario",
+          "request": {
+            "method": "PUT",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "url": {"raw": "http://localhost:8001/usuarios/1", "protocol": "http", "host": ["localhost"], "port": "8001", "path": ["usuarios", "1"]},
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"idusuario\": 1,\n  \"nombre\": \"María Fernanda García\",\n  \"email\": \"mariafernanda@ejemplo.com\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Eliminar Usuario",
+          "request": {
+            "method": "DELETE",
+            "url": {"raw": "http://localhost:8001/usuarios/1", "protocol": "http", "host": ["localhost"], "port": "8001", "path": ["usuarios", "1"]}
+          }
+        }
+      ]
+    },
+    {
+      "name": "MICROSERVICIO PEDIDOS",
+      "item": [
+        {
+          "name": "Crear Pedido",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "url": {"raw": "http://localhost:8002/pedidos/", "protocol": "http", "host": ["localhost"], "port": "8002", "path": ["pedidos", ""]},
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"idpedido\": 1,\n  \"idusuario\": 1,\n  \"descripcion\": \"Pizza Margarita grande y 2 Coca Colas\",\n  \"estado\": \"pendiente\",\n  \"fecha\": \"2026-02-13 12:30:00\",\n  \"total\": 28.50\n}"
+            }
+          }
+        },
+        {
+          "name": "Obtener Todos los Pedidos",
+          "request": {
+            "method": "GET",
+            "url": {"raw": "http://localhost:8002/pedidos/", "protocol": "http", "host": ["localhost"], "port": "8002", "path": ["pedidos", ""]}
+          }
+        },
+        {
+          "name": "Obtener Pedido por ID",
+          "request": {
+            "method": "GET",
+            "url": {"raw": "http://localhost:8002/pedidos/1", "protocol": "http", "host": ["localhost"], "port": "8002", "path": ["pedidos", "1"]}
+          }
+        },
+        {
+          "name": "Actualizar Pedido",
+          "request": {
+            "method": "PUT",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "url": {"raw": "http://localhost:8002/pedidos/1", "protocol": "http", "host": ["localhost"], "port": "8002", "path": ["pedidos", "1"]},
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"idpedido\": 1,\n  \"idusuario\": 1,\n  \"descripcion\": \"Pizza Margarita grande, 2 Coca Colas y postre\",\n  \"estado\": \"entregado\",\n  \"fecha\": \"2026-02-13 12:30:00\",\n  \"total\": 33.00\n}"
+            }
+          }
+        },
+        {
+          "name": "Eliminar Pedido",
+          "request": {
+            "method": "DELETE",
+            "url": {"raw": "http://localhost:8002/pedidos/1", "protocol": "http", "host": ["localhost"], "port": "8002", "path": ["pedidos", "1"]}
+          }
+        }
+      ]
+    }
+  ]
+}
