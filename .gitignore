@@ -1,3 +1,15 @@
 Rest/
+**/Rest/
 __pycache__/
+**/__pycache__/
 *.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+.mypy_cache/
+.coverage
+.env
+.venv/
+venv/
+build/
+dist/

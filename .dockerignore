@@ -1,0 +1,12 @@
+Rest/
+microservicio_pedidos/Rest/
+microservicio_usuarios/Rest/
+
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+.mypy_cache/
+
+.git/

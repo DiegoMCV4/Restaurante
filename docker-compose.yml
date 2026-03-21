@@ -1,0 +1,123 @@
+services:
+
+  postgres_clientes:
+    image: postgres:16
+    container_name: postgres_clientes
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: clientes_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_clientes_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      retries: 5
+      start_period: 20s
+
+  mysql_pedidos:
+    image: mysql:8.4
+    container_name: mysql_pedidos
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: pedidos_db
+      MYSQL_ROOT_PASSWORD: root
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql_pedidos_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost -proot"]
+      interval: 10s
+      retries: 5
+      start_period: 30s
+
+  rabbitmq:
+    image: rabbitmq:3.13-management
+    container_name: rabbitmq
+    restart: unless-stopped
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "check_running"]
+      interval: 10s
+      retries: 5
+
+  microservicio_clientes:
+    build:
+      context: .
+      dockerfile: microservicio_usuarios/Dockerfile
+    container_name: microservicio_clientes
+    restart: unless-stopped
+    ports:
+      - "8001:8001"
+    environment:
+      CLIENTES_DATABASE_URL: postgresql+psycopg2://postgres:postgres@postgres_clientes:5432/clientes_db
+      RABBITMQ_HOST: rabbitmq
+      CLIENTES_QUEUE: clientes.creados
+    depends_on:
+      postgres_clientes:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+
+  microservicio_pedidos:
+    build:
+      context: .
+      dockerfile: microservicio_pedidos/Dockerfile
+    container_name: microservicio_pedidos
+    restart: unless-stopped
+    ports:
+      - "8002:8002"
+    environment:
+      PEDIDOS_DATABASE_URL: mysql+pymysql://root:root@mysql_pedidos:3306/pedidos_db
+      RABBITMQ_HOST: rabbitmq
+      PEDIDOS_QUEUE: pedidos.creados
+    depends_on:
+      mysql_pedidos:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+
+  worker_clientes:
+    build:
+      context: .
+      dockerfile: microservicio_usuarios/Dockerfile
+    container_name: worker_clientes
+    command: python worker.py
+    restart: unless-stopped
+    environment:
+      CLIENTES_DATABASE_URL: postgresql+psycopg2://postgres:postgres@postgres_clientes:5432/clientes_db
+      RABBITMQ_HOST: rabbitmq
+      CLIENTES_QUEUE: clientes.creados
+    depends_on:
+      postgres_clientes:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+
+  worker_pedidos:
+    build:
+      context: .
+      dockerfile: microservicio_pedidos/Dockerfile
+    container_name: worker_pedidos
+    command: python worker.py
+    restart: unless-stopped
+    environment:
+      PEDIDOS_DATABASE_URL: mysql+pymysql://root:root@mysql_pedidos:3306/pedidos_db
+      RABBITMQ_HOST: rabbitmq
+      PEDIDOS_QUEUE: pedidos.creados
+      CLIENTES_CACHE_QUEUE: clientes.cache.pedidos
+    depends_on:
+      mysql_pedidos:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+
+volumes:
+  postgres_clientes_data:
+  mysql_pedidos_data:

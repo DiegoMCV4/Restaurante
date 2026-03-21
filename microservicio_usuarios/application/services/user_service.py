@@ -1,30 +1,34 @@
-# Servicio de aplicación para Usuarios
+# Servicio de aplicación para Clientes
 from typing import List, Optional
-from domain.models import Usuario
-from application.ports.user_repository import RepositorioUsuario
+from domain.models import Cliente
+from application.ports.user_repository import RepositorioCliente
 
-class ServicioUsuario:
-    """Servicio de aplicación que contiene la lógica de negocio de usuarios"""
+class ServicioCliente:
+    """Servicio de aplicación que contiene la lógica de negocio de clientes"""
     
-    def __init__(self, repositorio: RepositorioUsuario):
+    def __init__(self, repositorio: RepositorioCliente):
         self.repositorio = repositorio
     
-    def crear(self, usuario: Usuario) -> Usuario:
-        """Registra un nuevo usuario en el sistema"""
-        return self.repositorio.crear(usuario)
+    def crear(self, cliente: Cliente) -> Cliente:
+        """Registra un nuevo cliente en el sistema"""
+        return self.repositorio.crear(cliente)
     
-    def obtener_todos(self) -> List[Usuario]:
-        """Consulta todos los usuarios registrados"""
+    def obtener_todos(self) -> List[Cliente]:
+        """Consulta todos los clientes registrados"""
         return self.repositorio.obtener_todos()
     
-    def obtener_por_id(self, idusuario: int) -> Optional[Usuario]:
-        """Consulta la información de un usuario específico"""
-        return self.repositorio.obtener_por_id(idusuario)
+    def obtener_por_id(self, idcliente: int) -> Optional[Cliente]:
+        """Consulta la información de un cliente específico"""
+        return self.repositorio.obtener_por_id(idcliente)
+
+    def obtener_por_cel(self, cel: str) -> Optional[Cliente]:
+        """Consulta la información de un cliente por teléfono"""
+        return self.repositorio.obtener_por_cel(cel)
     
-    def actualizar(self, idusuario: int, usuario: Usuario) -> Optional[Usuario]:
-        """Modifica el nombre o email de un usuario existente"""
-        return self.repositorio.actualizar(idusuario, usuario)
+    def actualizar(self, idcliente: int, cliente: Cliente) -> Optional[Cliente]:
+        """Modifica los datos de un cliente existente"""
+        return self.repositorio.actualizar(idcliente, cliente)
     
-    def eliminar(self, idusuario: int) -> bool:
-        """Elimina un usuario del sistema"""
-        return self.repositorio.eliminar(idusuario)
+    def eliminar(self, idcliente: int) -> bool:
+        """Elimina un cliente del sistema"""
+        return self.repositorio.eliminar(idcliente)

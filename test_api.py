@@ -1,7 +1,7 @@
 import requests
-import json
+import time
 
-BASE_URL_USERS = "http://localhost:8001"
+BASE_URL_CLIENTES = "http://localhost:8001"
 BASE_URL_ORDERS = "http://localhost:8002"
 
 def print_separator(title):
@@ -9,111 +9,119 @@ def print_separator(title):
     print(f"  {title}")
     print(f"{'='*60}\n")
 
-# ============= USUARIOS =============
+# ============= CLIENTES =============
 
-print_separator("1. CREAR USUARIOS")
-usuarios = [
-    {"idusuario": 1, "nombre": "Juan Pérez", "email": "juan@example.com"},
-    {"idusuario": 2, "nombre": "María García", "email": "maria@example.com"},
-    {"idusuario": 3, "nombre": "Carlos López", "email": "carlos@example.com"}
+print_separator("1. CREAR CLIENTES")
+clientes = [
+    {"idcliente": 1, "nombre": "Juan Pérez", "cel": "5551001", "email": "juan@example.com"},
+    {"idcliente": 2, "nombre": "María García", "cel": "5551002", "email": "maria@example.com"},
+    {"idcliente": 3, "nombre": "Carlos López", "cel": "5551003", "email": "carlos@example.com"}
 ]
 
-for usuario in usuarios:
-    response = requests.post(f"{BASE_URL_USERS}/users", json=usuario)
-    print(f"✅ Usuario creado: {response.json()}")
+for cliente in clientes:
+    response = requests.post(f"{BASE_URL_CLIENTES}/clientes", json=cliente)
+    print(f"✅ Cliente creado: {response.json()}")
 
-print_separator("2. OBTENER TODOS LOS USUARIOS")
-response = requests.get(f"{BASE_URL_USERS}/users")
-print(f"📋 Total de usuarios: {len(response.json())}")
-for user in response.json():
-    print(f"  - {user['nombre']} ({user['email']})")
+# Esperar a que worker_clientes persista en Postgres y worker_cache en MySQL
+print("⏳ Esperando sincronización de clientes en caché...")
+time.sleep(3)
 
-print_separator("3. ACTUALIZAR USUARIO")
-usuario_actualizado = {
-    "idusuario": 1,
+print_separator("2. OBTENER TODOS LOS CLIENTES")
+response = requests.get(f"{BASE_URL_CLIENTES}/clientes")
+print(f"📋 Total de clientes: {len(response.json())}")
+for cliente in response.json():
+    print(f"  - {cliente['nombre']} ({cliente['email']})")
+
+print_separator("3. ACTUALIZAR CLIENTE")
+cliente_actualizado = {
+    "idcliente": 1,
     "nombre": "Juan Carlos Pérez Actualizado",
+    "cel": "5552001",
     "email": "juancarlos@example.com"
 }
-response = requests.put(f"{BASE_URL_USERS}/users/1", json=usuario_actualizado)
-print(f"✏️ Usuario actualizado: {response.json()}")
+response = requests.put(f"{BASE_URL_CLIENTES}/clientes/1", json=cliente_actualizado)
+print(f"✏️ Cliente actualizado: {response.json()}")
 
 # ============= PEDIDOS =============
 
 print_separator("4. CREAR PEDIDOS")
 pedidos = [
     {
-        "id_pedido": 1,
-        "id_usuario": 1,
+        "idpedido": 1,
         "descripcion": "Pizza Margherita, Ensalada César, 2 Cervezas",
-        "estado": "pendiente",
-        "fecha": "2026-02-13",
-        "total": 45.99
+        "nombre_pedido": "Pizza",
+        "cantidad": 2,
+        "precio": 45.99,
+        "idcliente": 1
     },
     {
-        "id_pedido": 2,
-        "id_usuario": 2,
+        "idpedido": 2,
         "descripcion": "Hamburguesa, Papas fritas, Refresco",
-        "estado": "en preparación",
-        "fecha": "2026-02-13",
-        "total": 15.50
+        "nombre_pedido": "Burger",
+        "cantidad": 1,
+        "precio": 15.50,
+        "idcliente": 2
     },
     {
-        "id_pedido": 3,
-        "id_usuario": 3,
+        "idpedido": 3,
         "descripcion": "Espaguetis a la Carbonara, Agua",
-        "estado": "entregado",
-        "fecha": "2026-02-13",
-        "total": 18.75
+        "nombre_pedido": "Pasta",
+        "cantidad": 1,
+        "precio": 18.75,
+        "idcliente": 3
     }
 ]
 
 for pedido in pedidos:
-    response = requests.post(f"{BASE_URL_ORDERS}/orders", json=pedido)
-    print(f"✅ Pedido creado: ID {response.json()['id_pedido']}")
+    response = requests.post(f"{BASE_URL_ORDERS}/pedidos", json=pedido)
+    print(f"✅ Pedido creado: ID {response.json()['idpedido']}")
+
+# Persistencia asíncrona: se espera un instante a que el worker consuma la cola.
+time.sleep(2)
 
 print_separator("5. OBTENER TODOS LOS PEDIDOS")
-response = requests.get(f"{BASE_URL_ORDERS}/orders")
+response = requests.get(f"{BASE_URL_ORDERS}/pedidos")
 print(f"📋 Total de pedidos: {len(response.json())}")
 for order in response.json():
-    print(f"  - Pedido #{order['id_pedido']}: {order['descripcion']} - Estado: {order['estado']}")
+    print(f"  - Pedido #{order['idpedido']}: {order['descripcion']} - Cliente: {order['idcliente']}")
 
 print_separator("6. OBTENER PEDIDO POR ID")
-response = requests.get(f"{BASE_URL_ORDERS}/orders/1")
+response = requests.get(f"{BASE_URL_ORDERS}/pedidos/1")
 pedido = response.json()
-print(f"ID: {pedido['id_pedido']}")
-print(f"Usuario: {pedido['id_usuario']}")
+print(f"ID: {pedido['idpedido']}")
+print(f"Cliente: {pedido['idcliente']}")
 print(f"Descripción: {pedido['descripcion']}")
-print(f"Estado: {pedido['estado']}")
-print(f"Fecha: {pedido['fecha']}")
-print(f"Total: ${pedido['total']}")
+print(f"Nombre pedido: {pedido['nombre_pedido']}")
+print(f"Cantidad: {pedido['cantidad']}")
+print(f"Precio: ${pedido['precio']}")
 
-print_separator("7. ACTUALIZAR PEDIDO (cambiar estado)")
+print_separator("7. ACTUALIZAR PEDIDO")
 pedido_actualizado = {
-    "id_pedido": 1,
-    "id_usuario": 1,
+    "idpedido": 1,
     "descripcion": "Pizza Margherita, Ensalada César, 2 Cervezas",
-    "estado": "entregado",
-    "fecha": "2026-02-13",
-    "total": 45.99
+    "nombre_pedido": "Pizza",
+    "cantidad": 3,
+    "precio": 45.99,
+    "idcliente": 1
 }
-response = requests.put(f"{BASE_URL_ORDERS}/orders/1", json=pedido_actualizado)
-print(f"✏️ Pedido actualizado - Nuevo estado: {response.json()['estado']}")
+response = requests.put(f"{BASE_URL_ORDERS}/pedidos/1", json=pedido_actualizado)
+print(f"✏️ Pedido actualizado - Nueva cantidad: {response.json()['cantidad']}")
 
 print_separator("8. ELIMINAR PEDIDO")
-response = requests.delete(f"{BASE_URL_ORDERS}/orders/2")
+response = requests.delete(f"{BASE_URL_ORDERS}/pedidos/2")
 print(f"🗑️ Pedido eliminado: {response.json()}")
 
 print_separator("9. VERIFICAR PEDIDOS RESTANTES")
-response = requests.get(f"{BASE_URL_ORDERS}/orders")
+response = requests.get(f"{BASE_URL_ORDERS}/pedidos")
 print(f"📋 Total de pedidos después de eliminación: {len(response.json())}")
 
-print_separator("10. ELIMINAR USUARIO")
-response = requests.delete(f"{BASE_URL_USERS}/users/3")
-print(f"🗑️ Usuario eliminado: {response.json()}")
+print_separator("10. ELIMINAR CLIENTE")
+response = requests.delete(f"{BASE_URL_CLIENTES}/clientes/3")
+print(f"🗑️ Cliente eliminado: {response.json()}")
 
 print_separator("RESUMEN FINAL")
-users_response = requests.get(f"{BASE_URL_USERS}/users")
-orders_response = requests.get(f"{BASE_URL_ORDERS}/orders")
-print(f"✅ Total de usuarios: {len(users_response.json())}")
+clientes_response = requests.get(f"{BASE_URL_CLIENTES}/clientes")
+orders_response = requests.get(f"{BASE_URL_ORDERS}/pedidos")
+print(f"✅ Total de clientes: {len(clientes_response.json())}")
 print(f"✅ Total de pedidos: {len(orders_response.json())}")
 print("\n¡Pruebas completadas correctamente!")

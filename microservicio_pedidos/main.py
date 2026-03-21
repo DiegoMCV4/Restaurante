@@ -21,5 +21,13 @@ def root():
         "documentacion": "/docs"
     }
 
+@app.get("/health", tags=["Health"])
+def health():
+    return {
+        "status": "ok",
+        "service": "pedidos",
+        "version": "1.0.0"
+    }
+
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8002)
